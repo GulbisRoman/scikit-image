@@ -25,31 +25,40 @@ def next(x, y, shape):
 	return x - shape[0] if(x >= shape[0]) else x, y - shape[1] if(y >= shape[1]) else y
 
 def evolve(data):
+	base = np.copy(data)
 	field = np.copy(data)
 	shape = field.shape
 	for i in range(shape[0]):
 		for j in range(shape[1]):
-			friendly_neighborhood = field[i - 1, j - 1] + field[i, j - 1] + field[next(i + 1, j - 1, shape)] + field[i - 1, j] + field[next(i + 1, j, shape)] + field[next(i - 1, j + 1, shape)] + field[next(i, j + 1, shape)] + field[next(i + 1, j + 1, shape)]
-			if(field[i, j]):
+			friendly_neighborhood = base[i - 1, j - 1] + base[i, j - 1] + base[next(i + 1, j - 1, shape)] + base[i - 1, j] + base[next(i + 1, j, shape)] + base[next(i - 1, j + 1, shape)] + base[next(i, j + 1, shape)] + base[next(i + 1, j + 1, shape)]
+			if(base[i, j]):
 				field[i, j] = int(friendly_neighborhood == 2 or friendly_neighborhood == 3)
 			else:
 				field[i, j] = int(friendly_neighborhood == 3)
 	return field
 
 
-
-def generateStateOfLive(**kwargs):
-	field = np.random.randint(0, 2, size=kwargs['size'])
-
-	states = [field]
-	for i in range(kwargs['iterations']):
+def generateStateOfLive(base, iterations):
+	states = [base]
+	for i in range(iterations):
 		states.append(evolve(states[-1]))
 
 	return states
 
+def generateRandomStateOfLive(size, iterations):
+	field = np.random.randint(0, 2, size=size)
+	return generateStateOfLive(field, iterations)
+
 
 # Играем в жизнь
-states = generateStateOfLive(size=(10, 10), iterations=10)
+states = generateRandomStateOfLive(size=(10, 10), iterations=10)
+#field = np.zeros((10, 10))
+#field[0, 1] = 1
+#field[1, 2] = 1
+#field[2, 0] = 1
+#field[2, 1] = 1
+#field[2, 2] = 1
+#states = generateStateOfLive(field, iterations=10)
 
 # Сохраняем
 if not os.path.exists('images/kek'):
