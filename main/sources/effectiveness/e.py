@@ -6,6 +6,10 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+import ctypes
+import ctypes.wintypes
+import time
+
 def get_size(obj, seen=None):
 	# From https://goshippo.com/blog/measure-real-size-any-python-object/
 	# Recursively finds size of objects
@@ -51,10 +55,19 @@ def generateStateOfLive(base, iterations):
 
 	return states
 
+kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+starting_time = ctypes.wintypes.LARGE_INTEGER()
+ending_time = ctypes.wintypes.LARGE_INTEGER()
+elapsed_microseconds = ctypes.wintypes.LARGE_INTEGER()
+frequency = ctypes.wintypes.LARGE_INTEGER()
+
+kernel32.QueryPerformanceFrequency(ctypes.byref(frequency)) 
+kernel32.QueryPerformanceCounter(ctypes.byref(starting_time))
+	
 base = io.imread('images/base.png') // 255
 states = generateStateOfLive(base, 100)
 
-print(get_size(states))
+#print(get_size(states))
 
 # Сохраняем
 if not os.path.exists('images/e'):
@@ -62,3 +75,10 @@ if not os.path.exists('images/e'):
 
 for i in range(len(states)):
 	io.imsave('images/e/{:04d}.png'.format(i + 1), states[i] * 255)
+	
+kernel32.QueryPerformanceCounter(ctypes.byref(ending_time))
+elapsed_microseconds = ending_time.value - starting_time.value
+elapsed_microseconds *= 1000
+elapsed_microseconds /= frequency.value
+
+print(elapsed_microseconds)
